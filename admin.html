@@ -191,62 +191,6 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   #loading p{color:var(--text-dim);font-size:13.5px;}
 
-  /* ─── MODAL CONFIG ───────────────────────────── */
-  #modal-config{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);
-    display:none;align-items:center;justify-content:center;z-index:150;padding:16px;
-  }
-  .modal-box{
-    background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-lg);
-    max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:24px 26px;
-  }
-  .modal-title{font-size:18px;font-weight:700;margin-bottom:8px;}
-  .modal-sub{font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:18px;}
-  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:16px;}
-  .tab-btn{
-    background:transparent;border:none;color:var(--text-dim);
-    padding:9px 4px;font-size:13px;font-weight:600;border-bottom:2px solid transparent;
-    margin-right:14px;
-  }
-  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
-  .steps-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-  .step{font-size:13px;color:var(--text-dim);line-height:1.5;}
-  .step b{color:var(--text);}
-  .step code{background:var(--panel);padding:2px 6px;border-radius:5px;color:var(--accent);font-size:12px;}
-  .code-block-wrap{position:relative;}
-  .code-block{
-    background:#080c08;border:1px solid var(--border);border-radius:8px;
-    padding:14px;max-height:240px;overflow:auto;
-    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.5;
-    color:#bcd6b8;white-space:pre;
-  }
-  .btn-copiar{
-    position:absolute;top:8px;right:8px;
-    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
-    border-radius:6px;padding:5px 10px;font-size:11.5px;
-  }
-  .btn-copiar:hover{border-color:var(--accent-dim);}
-  .config-field{margin-bottom:14px;}
-  .config-label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;}
-  .config-input{
-    width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);
-    border-radius:8px;padding:9px 11px;font-size:13px;
-  }
-  .config-input:focus{border-color:var(--accent-dim);}
-  .config-btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
-  .btn-modal-ok{
-    background:var(--accent);color:#08130a;border:none;border-radius:8px;
-    padding:10px 18px;font-size:13.5px;font-weight:700;
-  }
-  .btn-modal-ok:hover{background:#74e874;}
-  .btn-modal-sec{
-    background:transparent;color:var(--text-dim);border:1px solid var(--border);
-    border-radius:8px;padding:10px 18px;font-size:13.5px;font-weight:500;
-  }
-  .btn-modal-sec:hover{color:var(--text);}
-
   /* ─── RESPONSIVE ─────────────────────────────── */
   @media (max-width:880px){
     .logo-text{font-size:16px;}
@@ -275,160 +219,13 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<div id="modal-config" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
-  <div class="modal-box">
-    <div class="modal-title" id="modal-title-text">⚙️ Configurar Salva Ciudadana</div>
-    <div class="modal-sub">Para que los botones <strong style="color:var(--text)">Iniciar</strong> y <strong style="color:var(--text)">Finalizar</strong> escriban en tu Google Sheet, necesitas un Apps Script desplegado como web app.</div>
-    <div class="tabs">
-      <button class="tab-btn active" onclick="cambiarTab('paso1', this)">1. Apps Script</button>
-      <button class="tab-btn" onclick="cambiarTab('paso2', this)">2. URL &amp; Columnas</button>
-    </div>
-    <div class="tab-panel active" id="tab-paso1">
-      <div class="steps-list">
-        <div class="step"><b>1.</b> Abre tu Google Sheet → <code>Extensiones → Apps Script</code></div>
-        <div class="step"><b>2.</b> Borra el contenido y pega el código de abajo</div>
-        <div class="step"><b>3.</b> Guarda (<code>Ctrl+S</code>) → <code>Implementar → Nueva implementación</code></div>
-        <div class="step"><b>4.</b> Tipo: <b>Aplicación web</b> | Ejecutar como: <b>Yo</b> | Acceso: <b>Cualquier persona</b></div>
-        <div class="step"><b>5.</b> Autoriza permisos y copia la <b>URL de implementación</b></div>
-        <div class="step"><b>6.</b> Ve a pestaña <b>2. URL &amp; Columnas</b> y pega la URL</div>
-      </div>
-      <div class="code-block-wrap">
-        <button class="btn-copiar" onclick="copiarScript()">⎘ Copiar</button>
-        <div class="code-block" id="codigo-script">var SHEET_NAME = "Hoja 1";
-
-function doGet(e) { return manejarPeticion(e); }
-function doPost(e) { return manejarPeticion(e); }
-
-function manejarPeticion(e) {
-  try {
-    var params = e.parameter;
-    if (params.action === "updateEstado") {
-      return respuesta(actualizarEstado(params));
-    }
-    if (params.action === "addReporte") {
-      return respuesta(agregarReporte(params));
-    }
-    return respuesta({ success: false, error: "Accion desconocida" });
-  } catch (err) {
-    return respuesta({ success: false, error: err.message });
-  }
-}
-
-function respuesta(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function agregarReporte(params) {
-  var ss    = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) return { success: false, error: "Hoja no encontrada: " + SHEET_NAME };
-
-  var headers = sheet.getDataRange().getValues()[0].map(function(h) {
-    return h.toString().toLowerCase().trim();
-  });
-
-  var id = new Date().getTime().toString();
-  var fila = [];
-
-  headers.forEach(function(h) {
-    switch (h) {
-      case "id":          fila.push(id); break;
-      case "tipo":        fila.push(params.tipo || ""); break;
-      case "descripcion": fila.push(params.descripcion || ""); break;
-      case "prioridad":   fila.push(params.prioridad || ""); break;
-      case "latitud":     fila.push(params.lat || ""); break;
-      case "longitud":    fila.push(params.lng || ""); break;
-      case "estado":      fila.push("Pendiente"); break;
-      case "fecha":       fila.push(new Date()); break;
-      case "foto":        fila.push(params.foto || ""); break;
-      default:            fila.push("");
-    }
-  });
-
-  sheet.appendRow(fila);
-  return { success: true, id: id };
-}
-
-function actualizarEstado(params) {
-  var ss    = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) return { success: false, error: "Hoja no encontrada: " + SHEET_NAME };
-
-  var rowId       = params.rowId;
-  var colId       = params.colId;
-  var colEstado   = params.colEstado;
-  var nuevoEstado = params.estado;
-
-  var data    = sheet.getDataRange().getValues();
-  var headers = data[0].map(function(h){ return h.toString().toLowerCase().trim(); });
-
-  var idxEstado = headers.indexOf(colEstado.toLowerCase().trim());
-  if (idxEstado === -1) {
-    idxEstado = headers.length;
-    sheet.getRange(1, idxEstado + 1).setValue(colEstado);
-  }
-
-  var targetRow = -1;
-  if (colId && colId !== "id") {
-    var idxId = headers.indexOf(colId.toLowerCase().trim());
-    if (idxId !== -1) {
-      for (var i = 1; i < data.length; i++) {
-        if (data[i][idxId].toString() === rowId.toString()) {
-          targetRow = i + 1;
-          break;
-        }
-      }
-    }
-  }
-  if (targetRow === -1) {
-    var rowNum = parseInt(rowId);
-    if (!isNaN(rowNum) && rowNum >= 2 && rowNum <= data.length + 1) {
-      targetRow = rowNum;
-    }
-  }
-  if (targetRow === -1) return { success: false, error: "Fila no encontrada: " + rowId };
-
-  sheet.getRange(targetRow, idxEstado + 1).setValue(nuevoEstado);
-  return { success: true, row: targetRow, estado: nuevoEstado };
-}</div>
-      </div>
-      <div class="config-btns">
-        <button class="btn-modal-ok" onclick="cambiarTab('paso2', document.querySelectorAll('.tab-btn')[1])">Siguiente → URL &amp; Columnas</button>
-        <button class="btn-modal-sec" onclick="saltarConfig()">Solo lectura</button>
-      </div>
-    </div>
-    <div class="tab-panel" id="tab-paso2">
-      <div class="config-field">
-        <label class="config-label" for="input-script-url">URL del Apps Script (de la implementación, termina en /exec)</label>
-        <input class="config-input" id="input-script-url" type="text" placeholder="https://script.google.com/macros/s/XXXX/exec"/>
-      </div>
-      <div class="config-field">
-        <label class="config-label" for="input-col-estado">Nombre de columna de Estado en tu Sheet</label>
-        <input class="config-input" id="input-col-estado" type="text" value="estado" placeholder="estado"/>
-      </div>
-      <div class="config-field">
-        <label class="config-label" for="input-col-id">Nombre de columna ID único (deja "id" si no tienes)</label>
-        <input class="config-input" id="input-col-id" type="text" value="id" placeholder="id"/>
-      </div>
-      <div class="config-btns">
-        <button class="btn-modal-ok" onclick="guardarConfig()">✓ Guardar y activar</button>
-        <button class="btn-modal-sec" onclick="saltarConfig()">Solo lectura</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <header>
   <div class="logo">
     <div class="logo-icon" aria-hidden="true">🌿</div>
     <div class="logo-text">Salva <span>Ciudadana</span></div>
   </div>
   <div class="header-right">
-    <span id="modo-indicator" class="modo-badge lectura">Solo lectura</span>
     <span class="badge">PANEL MUNICIPAL</span>
-    <button id="btn-config" onclick="abrirConfig()">⚙ Config</button>
     <button id="btn-actualizar" onclick="cargarDatos()">↻ Actualizar</button>
   </div>
 </header>
@@ -458,15 +255,12 @@ function actualizarEstado(params) {
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  /* ─── CONFIGURACIÓN POR DEFECTO (ya lista para este proyecto) ── */
+  /* ─── CONFIGURACIÓN FIJA DEL PROYECTO ── */
   const SHEET_ID = '1FMiW2WD9A-FAEGZLAKBELVWgn2yLi_Oqr3dsmINrMXk';
   const URL_CSV  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Hoja 1`;
-  const SCRIPT_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbzXoPjYOq2EDOoR6WNX2BID8BjB_DpD2dJJ8Rwj3uK244t9tjkrQy2bxYZZ-Ypra9dJ/exec';
-
-  let SCRIPT_URL  = localStorage.getItem('eco_script_url') || SCRIPT_URL_DEFAULT;
-  let COL_ESTADO  = localStorage.getItem('eco_col_estado') || 'estado';
-  let COL_ID      = localStorage.getItem('eco_col_id') || 'id';
-  let modoLectura = !SCRIPT_URL;
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXoPjYOq2EDOoR6WNX2BID8BjB_DpD2dJJ8Rwj3uK244t9tjkrQy2bxYZZ-Ypra9dJ/exec';
+  const COL_ESTADO = 'estado';
+  const COL_ID     = 'id';
 
   let mapa, reportes = [], markers = [], filtroActual = 'todos';
 
@@ -505,62 +299,6 @@ function actualizarEstado(params) {
 
       frame.src = url;
     });
-  }
-
-  /* ─── MODAL / TABS ─────────────────────────────── */
-  function abrirConfig() {
-    document.getElementById('modal-config').style.display = 'flex';
-    document.getElementById('input-script-url').value = SCRIPT_URL;
-    document.getElementById('input-col-estado').value = COL_ESTADO;
-    document.getElementById('input-col-id').value = COL_ID;
-  }
-
-  function cambiarTab(id, btn) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + id).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  function copiarScript() {
-    navigator.clipboard.writeText(document.getElementById('codigo-script').textContent).then(() => {
-      const btn = document.querySelector('.btn-copiar');
-      btn.textContent = '✓ Copiado';
-      setTimeout(() => { btn.textContent = '⎘ Copiar'; }, 2000);
-    });
-  }
-
-  function guardarConfig() {
-    const url   = document.getElementById('input-script-url').value.trim();
-    const col   = document.getElementById('input-col-estado').value.trim() || 'estado';
-    const colId = document.getElementById('input-col-id').value.trim() || 'id';
-    if (!url) { mostrarToast('⚠️ Ingresa la URL del Apps Script', 'error'); return; }
-    SCRIPT_URL = url; COL_ESTADO = col; COL_ID = colId; modoLectura = false;
-    localStorage.setItem('eco_script_url', url);
-    localStorage.setItem('eco_col_estado', col);
-    localStorage.setItem('eco_col_id', colId);
-    document.getElementById('modal-config').style.display = 'none';
-    actualizarModoBadge();
-    mostrarToast('✅ Configuración guardada', 'ok');
-    cargarDatos();
-  }
-
-  function saltarConfig() {
-    modoLectura = true;
-    document.getElementById('modal-config').style.display = 'none';
-    actualizarModoBadge();
-    cargarDatos();
-  }
-
-  function actualizarModoBadge() {
-    const el = document.getElementById('modo-indicator');
-    if (modoLectura) { el.textContent = 'Solo lectura'; el.className = 'modo-badge lectura'; }
-    else { el.textContent = '✓ Escritura activa'; el.className = 'modo-badge escritura'; }
-  }
-
-  if (SCRIPT_URL) {
-    document.getElementById('modal-config').style.display = 'none';
-    actualizarModoBadge();
   }
 
   /* ─── MAPA ─────────────────────────────────────── */
@@ -640,11 +378,6 @@ function actualizarEstado(params) {
 
   /* ─── ACTUALIZAR ESTADO ─────────────────────────── */
   async function actualizarEstado(reporte, nuevoEstado, btnI, btnF) {
-    if (modoLectura) {
-      mostrarToast('⚠️ Activa la escritura en ⚙ Config', 'error');
-      return;
-    }
-
     btnI.classList.add('cargando'); btnF.classList.add('cargando');
     btnI.textContent = '...'; btnF.textContent = '...';
 
