@@ -446,8 +446,14 @@
 
   /* ─── FILTROS ───────────────────────────────────── */
   function reportesFiltrados() {
-    if (filtroActual === 'todos') return reportes;
-    return reportes.filter(r =>
+    // Los terminados nunca se mezclan con el resto: solo se ven
+    // cuando el filtro activo es exactamente "terminado".
+    if (filtroActual === 'terminado') {
+      return reportes.filter(r => getEstado(r[COL_ESTADO]) === 'terminado');
+    }
+    const activos = reportes.filter(r => getEstado(r[COL_ESTADO]) !== 'terminado');
+    if (filtroActual === 'todos') return activos;
+    return activos.filter(r =>
       r.tipo?.toLowerCase().includes(filtroActual.toLowerCase()) ||
       r.prioridad?.toLowerCase().includes(filtroActual.toLowerCase()) ||
       getEstado(r[COL_ESTADO]).includes(filtroActual.toLowerCase())
@@ -543,9 +549,11 @@
       const res   = await fetch(URL_CSV);
       const texto = await res.text();
       reportes = parsearCSV(texto).filter(r => r.tipo || r.descripcion);
-      // Más nuevos primero: ordenamos por id (timestamp) descendente.
-      reportes.sort((a, b) => Number(b.id || b._rowIndex) - Number(a.id || a._rowIndex));
-      actualizarStats(reportes);
+      // Más nuevos primero: las filas nuevas siempre se agregan al final
+      // del Sheet, así que ordenar por posición de fila es más confiable
+      // que parsear el id.
+      reportes.sort((a, b) => b._rowIndex - a._rowIndex);
+      actualizarStats(reportes.filter(r => getEstado(r[COL_ESTADO]) !== 'terminado'));
       renderLista(reportesFiltrados());
       renderMapa(reportesFiltrados());
     } catch (e) {
