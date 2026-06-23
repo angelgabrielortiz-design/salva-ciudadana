@@ -413,6 +413,37 @@
     }
   }
 
+  /* ─── ELIMINAR REPORTE (al finalizar) ───────────── */
+  async function eliminarReporte(reporte, btnI, btnF) {
+    btnI.classList.add('cargando'); btnF.classList.add('cargando');
+    btnI.textContent = '...'; btnF.textContent = '...';
+
+    try {
+      const idReporte = reporte.id || reporte._rowIndex;
+      const params = new URLSearchParams({
+        action: 'deleteReporte',
+        id:     idReporte
+      });
+
+      const url = `${SCRIPT_URL}?${params.toString()}`;
+      await llamarScriptViaIframe(url);
+
+      mostrarToast('✅ Reporte completado y eliminado', 'ok');
+
+      // Esperamos un instante a que el Sheet termine de borrar la fila,
+      // y recargamos todo desde cero para que las posiciones de fila
+      // de los demás reportes queden correctas.
+      setTimeout(cargarDatos, 900);
+
+    } catch (err) {
+      mostrarToast(`❌ ${err.message}`, 'error');
+      btnI.classList.remove('cargando');
+      btnF.classList.remove('cargando');
+      btnI.textContent = '▶ Iniciar';
+      btnF.textContent = '✓ Finalizar';
+    }
+  }
+
   /* ─── FILTROS ───────────────────────────────────── */
   function reportesFiltrados() {
     if (filtroActual === 'todos') return reportes;
@@ -468,7 +499,7 @@
       const btnI = card.querySelector('.btn-iniciar');
       const btnF = card.querySelector('.btn-finalizar');
       btnI.addEventListener('click', e => { e.stopPropagation(); actualizarEstado(r, 'Pendiente', btnI, btnF); });
-      btnF.addEventListener('click', e => { e.stopPropagation(); actualizarEstado(r, 'Terminado', btnI, btnF); });
+      btnF.addEventListener('click', e => { e.stopPropagation(); eliminarReporte(r, btnI, btnF); });
 
       lista.appendChild(card);
     });
@@ -512,6 +543,8 @@
       const res   = await fetch(URL_CSV);
       const texto = await res.text();
       reportes = parsearCSV(texto).filter(r => r.tipo || r.descripcion);
+      // Más nuevos primero: ordenamos por id (timestamp) descendente.
+      reportes.sort((a, b) => Number(b.id || b._rowIndex) - Number(a.id || a._rowIndex));
       actualizarStats(reportes);
       renderLista(reportesFiltrados());
       renderMapa(reportesFiltrados());
